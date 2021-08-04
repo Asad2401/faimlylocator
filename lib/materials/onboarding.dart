@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pak_lpg/commons/constants.dart';
+import 'package:pak_lpg/constants.dart';
 
 class onboarding {
   static Container getAppBarContainer() {
@@ -23,7 +23,7 @@ class onboarding {
     if (displayBackArrow) {
       return AppBar(
         brightness: Brightness.dark,
-        backgroundColor: kPrimaryColor1,
+        backgroundColor: kPrimaryColor,
         flexibleSpace: getAppBarContainer(),
         leading: new IconButton(
           icon: new Icon(Icons.arrow_back),
@@ -39,7 +39,7 @@ class onboarding {
     } else {
       return AppBar(
         brightness: Brightness.dark,
-        backgroundColor: kPrimaryColor1,
+        backgroundColor: kPrimaryColor,
         flexibleSpace: getAppBarContainer(),
         centerTitle: true,
         title: Text(
@@ -59,8 +59,8 @@ class onboarding {
       decoration: new BoxDecoration(
         gradient: new LinearGradient(
             colors: [
-              kPrimaryColor1,
-              kPrimaryColor2,
+              kBackgroundColor,
+              kBackgroundColor,
             ],
             begin: const FractionalOffset(0.0, 0.0),
             end: const FractionalOffset(1.0, 0.0),
@@ -70,27 +70,29 @@ class onboarding {
       child: Column(
         children: <Widget>[
           Padding(
-              padding: EdgeInsets.only(top: size.height * .03),
+              padding: EdgeInsets.only(top: 0),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  SizedBox(width: size.width * 0.09),
                   Image.asset(
-                    'lib/assets/eccogas.png',
-                    height: size.height * 0.09,
+                    'lib/assets/logo.png',
+                    height: 90,
                   ),
-                  SizedBox(width: size.width * 0.04),
-                  Text(
-                    kCompanyName,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 5,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 28.0,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      fontStyle: FontStyle.italic,
-                    ),
+                  SizedBox(
+                    width: 10,
                   ),
+                  // Text(
+                  //   kCompanyName,
+                  //   overflow: TextOverflow.ellipsis,
+                  //   maxLines: 5,
+                  //   textAlign: TextAlign.center,
+                  //   style: TextStyle(
+                  //     fontSize: 28.0,
+                  //     fontWeight: FontWeight.bold,
+                  //     color: kPrimaryColor,
+                  //     fontStyle: FontStyle.italic,
+                  //   ),
+                  // ),
                 ],
               )),
           // Container(

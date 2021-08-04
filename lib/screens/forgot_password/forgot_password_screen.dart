@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:pak_lpg/commons/constants.dart';
+import 'package:pak_lpg/constants.dart';
+import 'package:pak_lpg/localization/language_constants.dart';
 
 import 'components/body.dart';
 
@@ -10,7 +11,8 @@ class ForgotPasswordScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: kPrimaryColor,
-        title: Text("Forgot Password"),
+        centerTitle: true,
+        title: Text(getTranslated(context, 'Change_Password'),),
       ),
       body: Body(),
     );

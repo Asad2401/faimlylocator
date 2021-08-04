@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:pak_lpg/size_config.dart';
 
-import '../size_config.dart';
+import 'package:pak_lpg/size_config.dart';
 
 class FormError extends StatelessWidget {
   const FormError({

@@ -1,3 +1,4 @@
-const String homeRoute = "home";
-const String aboutRoute = "about";
-const String settingsRoute = "settings";
+// const String signRoute = "signin";
+// const String dashboardRoute = "dashBoard";
+// const String logisticsRoute = "logistics";
+// const String deliverdorderRoute = "deliveredOrder";

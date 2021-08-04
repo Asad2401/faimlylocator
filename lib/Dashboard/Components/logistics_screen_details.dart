@@ -1,14 +1,27 @@
-
 import 'dart:async';
 import 'dart:math';
 import 'dart:collection';
-
 import 'package:flutter/material.dart';
-import 'package:pak_lpg/commons/constants.dart';
-import 'package:pak_lpg/commons/http_requests.dart';
+import 'package:pak_lpg/Dashboard/Components/dashboard_drawer.dart';
 import 'package:pak_lpg/commons/utils.dart';
+import 'package:pak_lpg/constants.dart';
 import 'package:pak_lpg/models/get_location_model.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'dart:typed_data';
+import 'package:flutter/services.dart';
+
+
+import 'dart:ui' as ui;
+
+import 'package:pak_lpg/models/http_service.dart';
+
+Future<Uint8List> getBytesFromAsset(String path, int width) async {
+  ByteData data = await rootBundle.load(path);
+  ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(), targetWidth: width);
+  ui.FrameInfo fi = await codec.getNextFrame();
+  return (await fi.image.toByteData(format: ui.ImageByteFormat.png)).buffer.asUint8List();
+}
+
 
 class LogisticsDetail extends StatefulWidget {
 
@@ -16,7 +29,7 @@ class LogisticsDetail extends StatefulWidget {
 
   LogisticsDetail({
     this.vehicle_no
-});
+  });
 
   @override
   _LogisticsDetailsState createState() => _LogisticsDetailsState(vehicle_no: vehicle_no);
@@ -25,16 +38,70 @@ class LogisticsDetail extends StatefulWidget {
 
 class _LogisticsDetailsState extends State<LogisticsDetail> {
 
+  LatLng currentLocation = LatLng(-2.131910, -79.940287);
+  GoogleMapController _mapController;
+
+  LocationModel1 location;
+  BitmapDescriptor icon;
+  Timer location_timer;
+  Duration refreshRate = new Duration(seconds: locationInterval);
+  List<String> value;
+
   final String vehicle_no;
   _LogisticsDetailsState({
     this.vehicle_no
   });
   bool showLoading = false;
 
-  DriverLocation location;
+
+
+  Completer<GoogleMapController> _controller = Completer();
+
+  // Iterable markers = [];
+  // Iterable _markers = Iterable.generate(LocationModel1().response.length, (index) {
+  //   List <String> value = LocationModel1().response[index].latlong.split(',');
+  //   return Marker(
+  //       markerId: MarkerId(LocationModel1().response[index].uid),
+  //       position: LatLng(
+  //           double.parse(value[0]), double.parse(value[1])
+  //       ),
+  //       infoWindow: InfoWindow(title: LocationModel1().response[index].latlong));
+  //
+  // });
+
+
+
+
 
   Future<String> loadLocation() async {
-    location = await HTTPRequest.GetDriverLocation(vehicle_no, context, showLoading);
+    location = await HttpService.Locations(context, '1', '31.53079133,74.35122722', showLoading);
+
+      //getIcons();
+      locationUpdate();
+  }
+  locationUpdate() {
+
+    if (location.response.length != null) {
+      for(int i = 0; i<=location.response.length; i++) {
+        value = location.response[i].latlong.split(',');
+        setState(() {
+          this.currentLocation =
+              LatLng(double.parse(value[0]), double.parse(value[1]) );
+          this._mapController.animateCamera(CameraUpdate.newCameraPosition(
+            CameraPosition(target: this.currentLocation, zoom: 14),
+
+
+          ));
+        });
+        print(location.response[i].latlong);
+        print('location123');
+        print(location.response.length);
+        print(value[0]);
+        print(value[1]);
+      }
+
+    }
+
   }
 
   Future<String> loadViewData() async {
@@ -44,21 +111,10 @@ class _LogisticsDetailsState extends State<LogisticsDetail> {
       Future.delayed(Duration.zero, () => utils.showLoadingDialog(context, _keyLoader));
 
     await Future.wait([
-      loadLocation(),
-    //loadDriverDetails()
-    ]);
 
-    if(location == null || location.code.compareTo("100")==0) {
-      location = DriverLocation(location: Location(latitude: "0", longitude: "0", trip_id: "0", timestamp: "-", vehicle_no: "-"),
-      vehicle: Vehicle(assigned_datetime: "-",
-          delivery_datetime: "-",
-          end_trip: "-",
-          load_qty_mt: "-",
-          offload_qty_mt: "-",
-          reporting_time: "-",
-          start_trip: "-"));
-      Future.delayed(Duration.zero, () => utils.dataSuccessfullyLoaded(context, "Server Response","Location not found.", "OK"));
-    }
+
+      //loadDriverDetails()
+    ]);
 
     if(showLoading) {
       showLoading = false;
@@ -67,135 +123,118 @@ class _LogisticsDetailsState extends State<LogisticsDetail> {
 
     return "OK";
   }
+  @override
+  void initState() {
+    setState(() {
+
+     // markers = _markers;
+    });
+    loadLocation();
+    location_timer = new Timer.periodic(
+        refreshRate, (Timer t) => loadLocation());    super.initState();
+
+  }
+
+
+
+  void _onMapCreated(GoogleMapController controller) {
+    _mapController = controller;
+  }
+
+
+// icon Marker
+  getIcons() async {
+
+    final Uint8List markerIcon = await getBytesFromAsset('assets/images/aah.png', 50);
+    //final Marker marker = Marker(icon: BitmapDescriptor.fromBytes(markerIcon));
+    // var icon = await BitmapDescriptor.fromAssetImage(
+    //     ImageConfiguration(devicePixelRatio: 20.0, size: Size(2, 2)),
+    //
+    //     "assets/images/aah.png",
+    //
+    // );
+    setState(() {
+      this.icon = BitmapDescriptor.fromBytes(markerIcon);
+    });
+  }
+
+// Marker
+
+  Set<Marker> _createMarker() {
+    var marker = Set<Marker>();
+    marker.add(Marker(
+      markerId: MarkerId("MarkerCurrent"),
+      position: currentLocation,
+      icon: icon,
+      infoWindow: InfoWindow(
+        title: "Demo",
+        snippet:
+        "Lat ${'location.location.Lat'} - Lng ${'location.location.Lng'} ",
+      ),
+      draggable: true,
+      //onDragEnd: onDragEnd,
+    ));
+
+    return marker;
+  }
+
 
   @override
   Widget build(BuildContext context) {
 
-    return FutureBuilder<String>(
-        future: loadViewData(),
-        builder: (context, AsyncSnapshot<String> snapshot) {
-          if (snapshot.hasData) {
+    return Scaffold(
+      appBar: buildAppBar(context),
+      drawer: DashboardDrawer(),
+      body: Column(
+        children: <Widget>[
 
-            TextStyle tableTextStyleLeft = new TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 14.0);
-            TextStyle tableTextStyleRight = new TextStyle(color: Colors.lightGreen, fontSize: 16.0, fontWeight: FontWeight.w500);
-            bool locationExist = location.location.longitude == 0 ? false : true;
-            return Scaffold(
-              appBar: buildAppBar(context),
-              body: Column(
-                children: <Widget>[
-                  Container(
-                    margin: EdgeInsets.all(10),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      //mainAxisSize: MainAxisSize.max,
-                      children: [
-                        Row(
-                          children: <Widget>[
-                            Container(
-                              width: MediaQuery.of(context).size.width-20,
-                              padding: EdgeInsets.all(10.0),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10.0), color: kPrimaryColor
-                              ),
-                              height: 40,
-                              child: Text("Driver Trip Details", textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17),),
-                            )
-                          ],
+          Expanded(
+              child: Padding(
+                padding: EdgeInsets.all(10.0),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(10),
+                    topRight: Radius.circular(10),
+                    bottomRight: Radius.circular(10),
+                    bottomLeft: Radius.circular(10),
+                  ),
+                  child: Align(
+                    alignment: Alignment.center,
+                    heightFactor: 0.3,
+                    widthFactor: 2.5,
+                    child: Container(
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16.0),
+                          color: Colors.grey
+                      ),
+                      //child: MapSample()
+                      child:
+                      GoogleMap(
+                        initialCameraPosition: CameraPosition(
+                          target: currentLocation,
+                          zoom: 12.0,
                         ),
-                        SizedBox(height: 20,),
-                        Table(
-                          border: TableBorder.lerp(TableBorder.symmetric(inside: BorderSide(width: 2, color: Colors.grey)), TableBorder(bottom: BorderSide(width: 4, color: Colors.green)), 0.5),
-                          defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                          children: [
-                            TableRow(
-                                children: [
-                                  Text("Reporting Time", textAlign: TextAlign.center, style: tableTextStyleLeft,),
-                                  Text(location.vehicle.reporting_time, textAlign: TextAlign.center, style: tableTextStyleRight,)
-                                ]
-                            ),
-                            TableRow(
-                                children: [
-                                  Text("Trip Start Time", textAlign: TextAlign.center, style: tableTextStyleLeft,),
-                                  Text(location.vehicle.start_trip, textAlign: TextAlign.center, style: tableTextStyleRight,)
-                                ]
-                            ),
-                            TableRow(
-                                children: [
-                                  Text("Assigned Time", textAlign: TextAlign.center, style: tableTextStyleLeft,),
-                                  Text(location.vehicle.assigned_datetime, textAlign: TextAlign.center, style: tableTextStyleRight,)
-                                ]
-                            ),
-                            TableRow(
-                                children: [
-                                  Text("Location Reported On", textAlign: TextAlign.center, style: tableTextStyleLeft,),
-                                  Text(location.location.timestamp, textAlign: TextAlign.center, style: tableTextStyleRight,)
-                                ]
-                            ),
-                            TableRow(
-                                children: [
-                                  Text("Vehicle #", textAlign: TextAlign.center, style: tableTextStyleLeft,),
-                                  Text(location.location.vehicle_no, textAlign: TextAlign.center, style: tableTextStyleRight,)
-                                ]
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 20,),
-                        Row(
-                          children: <Widget>[
-                            Container(
-                              width: MediaQuery.of(context).size.width-20,
-                              padding: EdgeInsets.all(4.0),
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10.0), color: kPrimaryColor
-                              ),
-                              height: 25,
-                              child: Text("Driver Location", textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),),
-                            )
-                          ],
-                        ),
-                      ],
+                        myLocationEnabled: true,
+                        myLocationButtonEnabled: true,
+                        minMaxZoomPreference: MinMaxZoomPreference(12, 18.6),
+                        markers: _createMarker(),
+                        onMapCreated: _onMapCreated,
+                       // markers: Set.from(markers),
+                      ),
+                      // Map(
+                      //   longitude: double.parse(location.location.Lng.toString()),
+                      //   latitude: double.parse(location.location.Lat.toString()),
+                      //   timestamp: location.location.speed.toString(),
+                      //
+                      // ),
                     ),
                   ),
-                  locationExist ?
-                  Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.all(10.0),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(10),
-                            topRight: Radius.circular(10),
-                            bottomRight: Radius.circular(10),
-                            bottomLeft: Radius.circular(10),
-                          ),
-                          child: Align(
-                            alignment: Alignment.center,
-                            heightFactor: 0.3,
-                            widthFactor: 2.5,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(16.0),
-                                  color: Colors.grey
-                              ),
-                              //child: MapSample()
-                              child: Map(
-                                longitude: double.parse(location.location.longitude),
-                                latitude: double.parse(location.location.latitude),
-                                timestamp: location.location.timestamp,
-                              ),
-                            ),
-                          ),
-                        ),
-                      )
-                  ) : Text("Location Not Found!", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 16),)
-                ],
-              ),
-              
-            );
-          }
-          else {
-            return utils.circularIndicatorInView();
-          }
-        }
+                ),
+              )
+          ),
+        ],
+      ),
+
     );
   }
 
@@ -214,11 +253,13 @@ class _LogisticsDetailsState extends State<LogisticsDetail> {
     double height = MediaQuery.of(context).size.height;
     return new AppBar(
         backgroundColor: kPrimaryColor,
+        centerTitle: true,
         //foregroundColor: kPrimaryColor1,
-        shadowColor: kPrimaryColor1,
+        //shadowColor: kPrimaryColor1,
         toolbarHeight: height * .1,
-        title: new Text('Logistics Driver Location'),
-        actions: actions);
+        title: new Text('Home'),
+        actions: actions
+    );
 
   }
 
@@ -258,13 +299,13 @@ class _LogisticsDetailsState extends State<LogisticsDetail> {
 }
 
 class Map extends StatefulWidget {
-  
+
   final double latitude;
   final double longitude;
   final String timestamp;
-  
+
   Map({@required this.longitude, this.latitude, this.timestamp});
-  
+
   @override
   State<Map> createState() => MapState(longitude: longitude, latitude: latitude, timestamp: timestamp);
 }
@@ -321,31 +362,31 @@ class MapState extends State<Map> {
       );
     });
   }
-    @override
+  @override
   Widget build(BuildContext context) {
 
-      double width = MediaQuery.of(context).size.width;
-      final CameraPosition _kGooglePlex = CameraPosition(
-        target: LatLng(latitude, longitude),
-        zoom: 14.4746,
-      );
+    double width = MediaQuery.of(context).size.width;
+    final CameraPosition _kGooglePlex = CameraPosition(
+      target: LatLng(latitude, longitude),
+      zoom: 14.4746,
+    );
 
-      return new Scaffold(
+    return new Scaffold(
 
-          body: Container(
-            //padding: EdgeInsets.all(10.0),
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20.0),
-            ),
-            child: GoogleMap(
-              mapType: MapType.normal,
-              initialCameraPosition: _kGooglePlex,
-              onMapCreated: _onMapCreated,
-              markers: _markers,
-            ),
-          )
-      );
-    }
+        body: Container(
+          //padding: EdgeInsets.all(10.0),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          child: GoogleMap(
+            mapType: MapType.normal,
+            initialCameraPosition: _kGooglePlex,
+            onMapCreated: _onMapCreated,
+            markers: _markers,
+          ),
+        )
+    );
+  }
 
 }
 

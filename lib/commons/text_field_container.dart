@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pak_lpg/commons/constants.dart';
+import 'package:pak_lpg/constants.dart';
 
 class TextFieldContainer extends StatelessWidget {
   final Widget child;
@@ -10,7 +10,6 @@ class TextFieldContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     Size size = MediaQuery.of(context).size;
     return Container(
       margin: EdgeInsets.symmetric(vertical: 7),

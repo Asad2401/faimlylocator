@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pak_lpg/commons/constants.dart';
+import 'package:pak_lpg/constants.dart';
 
 class RoundedButton extends StatelessWidget {
   final String text;
@@ -7,15 +7,14 @@ class RoundedButton extends StatelessWidget {
   final Color color, textColor;
   final buttonWidth;
 
-
-  const RoundedButton({
-    Key key,
-    this.text,
-    this.press,
-    this.color = kPrimaryColor,
-    this.textColor = Colors.white,
-    this.buttonWidth = 0.8
-  }) : super(key: key);
+  const RoundedButton(
+      {Key key,
+      this.text,
+      this.press,
+      this.color = kPrimaryColor,
+      this.textColor = Colors.white,
+      this.buttonWidth = 0.8})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -45,14 +44,14 @@ class RoundedButtonSmall extends StatelessWidget {
   final Color color, textColor;
   final buttonWidth;
 
-  const RoundedButtonSmall({
-    Key key,
-    this.text,
-    this.press,
-    this.color = kPrimaryColor,
-    this.textColor = Colors.white,
-    this.buttonWidth = 0.27
-  }) : super(key: key);
+  const RoundedButtonSmall(
+      {Key key,
+      this.text,
+      this.press,
+      this.color = kPrimaryColor,
+      this.textColor = Colors.white,
+      this.buttonWidth = 0.27})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {

@@ -10,12 +10,12 @@ import 'package:pak_lpg/screens/sign_in/sign_in_screen.dart';
 import 'package:pak_lpg/size_config.dart';
 import 'package:http/http.dart' as http;
 
-class ForgotPassForm extends StatefulWidget {
+class AddFamilyForm extends StatefulWidget {
   @override
-  _ForgotPassFormState createState() => _ForgotPassFormState();
+  _AddFamilyFormState createState() => _AddFamilyFormState();
 }
 
-class _ForgotPassFormState extends State<ForgotPassForm> {
+class _AddFamilyFormState extends State<AddFamilyForm> {
   final _formKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();

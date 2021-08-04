@@ -12,13 +12,13 @@ class Background_signup extends StatelessWidget {
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
-        appBar: onboarding.getAppBar("Sign up", true, context),
-        backgroundColor: Colors.white70,
+        appBar: onboarding.getAppBar("Sign Up", true, context),
+        backgroundColor: Colors.white,
         body: Stack(
           children: <Widget>[
             //  ,
             child,
-            onboarding.getHeader(size, .21)
+            //onboarding.getHeader(size, .21)
             //Positioned(top: 0.0, child: onboarding.getHeader(size, .21)),
           ],
         ));

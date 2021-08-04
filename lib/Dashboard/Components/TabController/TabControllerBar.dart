@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pak_lpg/commons/constants.dart';
+import 'package:pak_lpg/constants.dart';
 
 class MATabBar extends StatelessWidget implements PreferredSizeWidget {
   final List<Tab> tabs;
@@ -28,12 +28,11 @@ class MATabBar extends StatelessWidget implements PreferredSizeWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         children: <Widget>[
           Image.asset(
-            'lib/assets/eccogas.png',
-            height: 220,
-            width: 220,
+            'lib/assets/logo.png',
+            height: size.height * 0.06,
           ),
           SizedBox(
-            width: size.width * .05,
+            width: size.width * .03,
           ),
           Text(
             kCompanyName,
